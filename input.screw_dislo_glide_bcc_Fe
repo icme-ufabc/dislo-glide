@@ -27,7 +27,7 @@ variable			restartfile string "restart.1"
 
 restart				${nrestart} restart.1 restart.2		
 
-if				"${restart} == 0" then "read_data coord.read_data"
+if				"${restart} == 0" then "read_data screw_bcc_Fe.lmp"
 if				"${restart} == 1 || ${restart} == 2" then &
 				"read_restart ${restartfile}"
 
