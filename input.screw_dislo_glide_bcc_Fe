@@ -1,0 +1,109 @@
+dimension                       3
+units                           metal
+boundary                        p s p
+atom_style                      atomic
+
+variable			dt equal 0.001			# ps
+variable			ttot equal 10            	# ns
+variable			equil equal 0.2			# ns
+variable			dump equal 500			# ps
+variable                        temp equal 300			# K
+
+variable			upper equal 190			# Ang, adjust to the box
+variable			lower equal 7			# Ang, adjust to the box
+variable			srate equal 0.000001		# Def/ps 
+
+variable			trun equal ${ttot}*1000/${dt}
+variable			tequil equal ${equil}*1000/${dt}
+variable			simseed equal 17052002
+variable			ndump equal ${dump}/${dt}
+variable			nstress equal 100
+variable			nrestart equal 10000
+
+variable			factor equal 160217.6487	# ev/Ang^3 to MPa 
+
+variable			restart equal 0
+variable			restartfile string "restart.1"
+
+restart				${nrestart} restart.1 restart.2		
+
+if				"${restart} == 0" then "read_data coord.read_data"
+if				"${restart} == 1 || ${restart} == 2" then &
+				"read_restart ${restartfile}"
+
+region				upper block INF INF ${upper} INF  INF INF units box
+region				lower block INF INF INF ${lower} INF INF units box
+region				mobile block INF INF ${lower} ${upper} INF INF units box
+
+pair_style                      eam/alloy 
+pair_coeff                      * *  Fe-Cbecquart2011.eam Fe
+
+group				mobile region mobile
+group				upper region upper
+group				lower region lower
+
+neighbor                        4.0 bin
+neigh_modify                    delay 5
+
+min_style                       cg
+
+compute                         temp mobile temp
+
+thermo				1000
+
+variable                        vx equal ly*${srate} 
+variable			vy equal 0.0
+variable			vz equal 0.0
+
+variable			t equal step*${dt}
+variable			x0 equal xcm(upper,x)
+variable			disp equal abs(xcm(upper,x)-${x0})
+variable			strain equal abs(xcm(upper,x)-${x0})/ly*100.0
+variable			shear equal -fcm(upper,x)/lx/lz*${factor}
+
+thermo_style			custom step c_temp press etotal
+
+timestep			${dt}
+
+fix				frozenlower lower setforce 0.0 0.0 0.0
+
+if				"${restart} == 1" then "jump SELF equil"
+if				"${restart} == 2" then "jump SELF md"
+
+reset_timestep			0
+
+variable			initemp equal ${temp}*2.0
+
+velocity			mobile create ${initemp} ${simseed}
+velocity			upper set 0.0 0.0 0.0 units box
+velocity			lower set 0.0 0.0 0.0 units box
+
+label				equil
+
+fix				frozenupper upper setforce 0.0 0.0 0.0
+fix				nvt0 mobile nvt temp ${temp} ${temp} $(dt*100.0) drag 2.0
+
+run				${tequil}
+
+unfix				nvt0
+unfix				frozenupper
+
+reset_timestep			0
+
+label				md
+
+fix                             nvt1 mobile nvt temp ${temp} ${temp} $(dt*100.0)
+
+dump                            1 all atom ${ndump} md.${temp}.*.lammpstrj
+
+fix				shear upper move linear ${vx} ${vy} ${vz} units box
+fix				stress all print ${nstress} "$t ${disp} ${strain} ${shear}" file stress.${temp}.dat &
+				screen no title "# TIME DISP STRAIN STRESS"
+
+run				${trun}
+
+undump                          1
+
+unfix				stress
+unfix				shear
+
