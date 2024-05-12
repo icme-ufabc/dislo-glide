@@ -10,4 +10,4 @@ If the content of this repository is useful for your research, please consider c
 
 If you don't mind, please also leave a star.
 
-Our group is also open to collaborations with theoretical or experimental groups in Computational Materials Science. You can reach out on (Linkedin)[https://www.linkedin.com/in/roberto-gomes-phd-8a718317b/].
+Our group is also open to collaborations with theoretical or experimental groups in Computational Materials Science. You can reach out on [Linkedin](https://www.linkedin.com/in/roberto-gomes-phd-8a718317b/).
