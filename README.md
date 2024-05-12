@@ -8,4 +8,6 @@ If the content of this repository is useful for your research, please consider c
 * Acta Materialia 59 (2011) 6963–6974
 * J. Phys.: Condens. Matter 25 (2013) 025401
 
-Our group is also open to collaborations with theoretical or experimental groups in Computational Materials Science.
+If you don't mind, please also leave a star.
+
+Our group is also open to collaborations with theoretical or experimental groups in Computational Materials Science. You can reach out on (Linkedin)[https://www.linkedin.com/in/roberto-gomes-phd-8a718317b/].
